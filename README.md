@@ -43,5 +43,5 @@ Have the local port 9000 free for use.
 You can use:
 `./mvnw spring-boot:run`
 
-The lookup the following in your browser:
+Then lookup the following in your browser:
 `localhost:9000`
