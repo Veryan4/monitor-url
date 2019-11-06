@@ -32,7 +32,7 @@ I used SDKMAN to control versions, I recommend giving it a look: https://sdkman.
 
 Maven: 3.6.2
 
-Java: 8
+Java: 1.8.0_232
 
 Spring-boot: 2.2.0
 
