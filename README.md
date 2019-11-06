@@ -39,8 +39,9 @@ Spring-boot: 2.2.0
 Have the local port 9000 free for use.
 
 ### 5. How to Use
-I sent HR the jar, so you can run it with:
-`java -jar monitor-0.1.jar`
 
-Otherwise you can use:
+You can use:
 `./mvnw spring-boot:run`
+
+The lookup the following in your browser:
+`localhost:9000`
