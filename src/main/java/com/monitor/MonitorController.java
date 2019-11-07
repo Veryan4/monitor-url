@@ -22,79 +22,79 @@ public class MonitorController implements Runnable {
 
     @GetMapping("/")
     public String main(Model model) {
-        if(CollectionUtils.isEmpty(monitor.getStatuses())) {
-            monitor.setMessage("Monitor hasn't Started yet");
+        if (CollectionUtils.isEmpty(monitor.getStatuses())) {
+            this.monitor.setMessage("Monitor hasn't Started yet");
         }
-        model.addAttribute("monitor", monitor);
-        return "monitor"; //view
+        model.addAttribute("monitor", this.monitor);
+        return "monitor"; //view in monitor.html
     }
 
     @PostMapping("/")
     public String monitorSubmit(@ModelAttribute Monitor newMonitor) {
         int newInterval = newMonitor.getInterval();
-        if(Monitor.isIntervalValid(newInterval)){
-          monitor.resetStatuses();
-          monitor.setInterval(newInterval);
+        if (Monitor.isIntervalValid(newInterval)) {
+            this.monitor.resetStatuses();
+            this.monitor.setInterval(newInterval);
         } else {
-          monitor.setMessage("Minimum Interval is 300ms");
+            this.monitor.setMessage("Minimum Interval is 300ms");
         }
         String newUrl = newMonitor.getUrl();
-        if(Monitor.isUrlValid(newUrl)){
-          if(!newUrl.equals(monitor.getUrl())) {
-             monitor.resetStatuses();
-          }
-          monitor.setUrl(newUrl);
+        if (Monitor.isUrlValid(newUrl)) {
+            if (!newUrl.equals(this.monitor.getUrl())) {
+                this.monitor.resetStatuses();
+            }
+            this.monitor.setUrl(newUrl);
         } else {
-          monitor.setMessage("URL is invalid");
-          return "monitor"; //view
+            this.monitor.setMessage("URL is invalid");
+            return "monitor"; //view in monitor.html
         }
         worker = new Thread(this);
         worker.start();
-        monitor.setMessage("Monitor is Started");
+        this.monitor.setMessage("Monitor is Started");
         newMonitor = monitor;
-        return "monitor"; //view
+        return "monitor"; //view in monitor.html
     }
 
     @GetMapping("/stop")
     public String stop(Model model) {
-        running.set(false);
-        monitor.resetStatuses();
-        monitor.setMessage("Monitor is Stopped for: " + monitor.getUrl());
-        model.addAttribute("monitor", monitor);
-        return "monitor"; //view
+        this.running.set(false);
+        this.monitor.resetStatuses();
+        this.monitor.setMessage("Monitor is Stopped for: " + this.monitor.getUrl());
+        model.addAttribute("monitor", this.monitor);
+        return "monitor"; //view in monitor.html
     }
 
     public void run() {
-        running.set(true);
-        while (running.get()) {
+        this.running.set(true);
+        while (this.running.get()) {
             try {
-                Thread.sleep(monitor.getInterval());
-            } catch (InterruptedException e){
+                Thread.sleep(this.monitor.getInterval());
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.out.println("Thread was interrupted, Failed to complete operation");
             }
             getStatus();
-         }
+        }
     }
 
     public void getStatus() {
         try {
-            URL url = monitor.getHttpUrl();
+            URL url = this.monitor.getHttpUrl();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setRequestProperty("Content-Type", "application/json");
             String response = "Down";
             int responseCode = con.getResponseCode();
-            if(responseCode == 200){
+            if (responseCode == 200) {
                 response = "Up";
             }
             int timeout = 5000;
             int interval = monitor.getInterval();
-            if(interval < timeout){
+            if (interval < timeout) {
                 timeout = interval;
             }
             con.setConnectTimeout(timeout);
-            monitor.addStatus(response);
+            this.monitor.addStatus(response);
         } catch (Exception e) {
             e.printStackTrace();
         }
