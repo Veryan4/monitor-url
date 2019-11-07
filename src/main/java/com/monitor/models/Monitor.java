@@ -10,16 +10,15 @@ import java.net.URL;
 public class Monitor {
 
     private int interval = 1000;
-    private List<Status> statuses = new ArrayList<>();
+    private List < Status > statuses = new ArrayList < > ();
     private String url = "https://google.com";
     private String message = "";
     private final static int maxStatuses = 19;
     private final static int minInterval = 299;
 
-    public Monitor() {
-    }
+    public Monitor() {}
 
-    public Monitor(int interval, String url, List<Status> statuses, String message) {
+    public Monitor(int interval, String url, List < Status > statuses, String message) {
         this.interval = interval;
         this.url = url;
         this.statuses = statuses;
@@ -31,38 +30,38 @@ public class Monitor {
     }
 
     public static boolean isUrlValid(String url) {
-        if(StringUtils.isEmpty(url)) {
-          return false;
+        if (StringUtils.isEmpty(url)) {
+            return false;
         }
         try {
-          URL testUrl = new URL(url);
+            URL testUrl = new URL(url);
         } catch (Exception e) {
-          e.printStackTrace();
-          return false;
+            e.printStackTrace();
+            return false;
         }
         return true;
     }
 
     public Monitor addStatus(String response) {
-      Status status = new Status(new Date(), response);
-      if(statuses.size() > maxStatuses){
-          statuses.remove(0);
-      }
-      statuses.add(status);
-      return this;
+        Status status = new Status(new Date(), response);
+        if (statuses.size() > maxStatuses) {
+            statuses.remove(0);
+        }
+        statuses.add(status);
+        return this;
     }
 
     public Monitor resetStatuses() {
-        statuses = new ArrayList<>();
+        statuses = new ArrayList < > ();
         return this;
     }
 
     public URL getHttpUrl() {
         URL httpUrl = null;
         try {
-          httpUrl = new URL(url);
+            httpUrl = new URL(url);
         } catch (Exception e) {
-          e.printStackTrace();
+            e.printStackTrace();
         }
         return httpUrl;
     }
@@ -72,8 +71,8 @@ public class Monitor {
     }
 
     public Monitor setInterval(int interval) {
-        if(isIntervalValid(interval)){
-          this.interval = interval;
+        if (isIntervalValid(interval)) {
+            this.interval = interval;
         }
         return this;
     }
@@ -83,17 +82,17 @@ public class Monitor {
     }
 
     public Monitor setUrl(String url) {
-        if(isUrlValid(url)){
-          this.url = url;
+        if (isUrlValid(url)) {
+            this.url = url;
         }
         return this;
     }
 
-    public List<Status> getStatuses() {
+    public List < Status > getStatuses() {
         return statuses;
     }
 
-    public Monitor setStatuses(List<Status> statuses) {
+    public Monitor setStatuses(List < Status > statuses) {
         this.statuses = statuses;
         return this;
     }
