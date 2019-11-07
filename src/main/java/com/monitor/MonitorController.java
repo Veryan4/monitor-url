@@ -7,11 +7,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
-import org.springframework.util.CollectionUtils;
 import com.monitor.models.*;
 import java.net.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 
 @Controller
 public class MonitorController implements Runnable {
@@ -22,8 +20,8 @@ public class MonitorController implements Runnable {
 
     @GetMapping("/")
     public String main(Model model) {
-        if (CollectionUtils.isEmpty(monitor.getStatuses())) {
-            this.monitor.setMessage("Monitor hasn't Started yet");
+        if (!this.running.get()) {
+            this.monitor.message = "Monitor is Not Running";
         }
         model.addAttribute("monitor", this.monitor);
         return "monitor"; //view in monitor.html
@@ -31,35 +29,36 @@ public class MonitorController implements Runnable {
 
     @PostMapping("/")
     public String monitorSubmit(@ModelAttribute Monitor newMonitor) {
-        int newInterval = newMonitor.getInterval();
+        int newInterval = newMonitor.interval;
         if (Monitor.isIntervalValid(newInterval)) {
-            this.monitor.resetStatuses();
-            this.monitor.setInterval(newInterval);
+            this.monitor.interval = newInterval;
         } else {
-            this.monitor.setMessage("Minimum Interval is 300ms");
+            this.monitor.message = "Minimum Interval is 300ms";
         }
-        String newUrl = newMonitor.getUrl();
+        String newUrl = newMonitor.url;
         if (Monitor.isUrlValid(newUrl)) {
-            if (!newUrl.equals(this.monitor.getUrl())) {
+            if (!newUrl.equals(this.monitor.url)) {
                 this.monitor.resetStatuses();
             }
-            this.monitor.setUrl(newUrl);
+            this.monitor.url = newUrl;
         } else {
-            this.monitor.setMessage("URL is invalid");
+            this.monitor.message = "URL is invalid";
             return "monitor"; //view in monitor.html
         }
-        worker = new Thread(this);
-        worker.start();
-        this.monitor.setMessage("Monitor is Started");
-        newMonitor = monitor;
+        this.monitor.message = "Monitor is Running";
+        //@ModelAttribute seems to stop me from passing properties of this.monitor to newMonitor
+        newMonitor.message = "Monitor is Running";
+        newMonitor.statuses = this.monitor.statuses;
+        this.worker = new Thread(this);
+        this.worker.start();
         return "monitor"; //view in monitor.html
     }
 
     @GetMapping("/stop")
     public String stop(Model model) {
         this.running.set(false);
-        this.monitor.resetStatuses();
-        this.monitor.setMessage("Monitor is Stopped for: " + this.monitor.getUrl());
+        this.worker.stop();
+        this.monitor.message ="Monitor is Stopped";
         model.addAttribute("monitor", this.monitor);
         return "monitor"; //view in monitor.html
     }
@@ -68,7 +67,7 @@ public class MonitorController implements Runnable {
         this.running.set(true);
         while (this.running.get()) {
             try {
-                Thread.sleep(this.monitor.getInterval());
+                Thread.sleep(this.monitor.interval);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.out.println("Thread was interrupted, Failed to complete operation");
@@ -89,7 +88,7 @@ public class MonitorController implements Runnable {
                 response = "Up";
             }
             int timeout = 5000;
-            int interval = monitor.getInterval();
+            int interval = monitor.interval;
             if (interval < timeout) {
                 timeout = interval;
             }
