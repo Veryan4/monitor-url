@@ -8,127 +8,93 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import com.monitor.models.*;
 import java.net.*;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
 @Controller
 public class MonitorController implements Runnable {
 
-    private URL currentUrl;
-    private int interval = 1000;
-    private int maxStatuses = 19;
-    private boolean isStart = false;
-    private List<Status> statuses = new ArrayList<>();
+    private Monitor monitor = new Monitor();
     private Thread worker;
     private final AtomicBoolean running = new AtomicBoolean(false);
 
     @GetMapping("/")
     public String main(Model model) {
-        if(currentUrl == null){
-          try {
-            this.currentUrl = new URL("https://google.com");
-          } catch (Exception e) {
-            //do nothing
-          }
+        if(CollectionUtils.isEmpty(monitor.getStatuses())) {
+            monitor.setMessage("Monitor hasn't Started yet");
         }
-        if(CollectionUtils.isEmpty(statuses)){
-          model.addAttribute("monitor", new Monitor(interval, currentUrl.toString(), statuses, "Monitoring hasn't started yet"));
-        } else {
-          model.addAttribute("monitor", new Monitor(interval, currentUrl.toString(), statuses, ""));
-        }
+        model.addAttribute("monitor", monitor);
         return "monitor"; //view
     }
 
     @PostMapping("/")
-    public String monitorSubmit(@ModelAttribute Monitor monitor) {
-        int newInterval = monitor.getInterval();
-        if(newInterval > 299 &&  newInterval != this.interval){
-          ControlSubThread(newInterval);
-          statuses = new ArrayList<>();
+    public String monitorSubmit(@ModelAttribute Monitor newMonitor) {
+        int newInterval = newMonitor.getInterval();
+        if(Monitor.isIntervalValid(newInterval)){
+          monitor.resetStatuses();
+          monitor.setInterval(newInterval);
         } else {
-          monitor.setInterval(this.interval);
+          monitor.setMessage("Minimum Interval is 300ms");
         }
-        String url = monitor.getUrl();
-        if(!StringUtils.isEmpty(url)){
-          try {
-            URL urlToPush = new URL(url);
-            if(!urlToPush.equals(this.currentUrl)) {
-               statuses = new ArrayList<>();
-               currentUrl = urlToPush;
-            } else {
-              monitor.setUrl(this.currentUrl.toString());
-            }
-          } catch (Exception e) {
-            e.printStackTrace();
-            monitor.setMessage("The URL was incorrect");
+        String newUrl = newMonitor.getUrl();
+        if(Monitor.isUrlValid(newUrl)){
+          if(!newUrl.equals(monitor.getUrl())) {
+             monitor.resetStatuses();
           }
-          worker = new Thread(this);
-          worker.start();
-          monitor.setMessage("Monitor is Started");
+          monitor.setUrl(newUrl);
+        } else {
+          monitor.setMessage("URL is invalid");
+          return "monitor"; //view
         }
-        //model.addAttribute("monitor", monitor);
-        return "monitor";
+        worker = new Thread(this);
+        worker.start();
+        monitor.setMessage("Monitor is Started");
+        newMonitor = monitor;
+        return "monitor"; //view
     }
 
     @GetMapping("/stop")
     public String stop(Model model) {
         running.set(false);
-        statuses = new ArrayList<>();
-        if(currentUrl != null) {
-          model.addAttribute("monitor", new Monitor(interval, currentUrl.toString(), statuses, "Monitor is Stopped for: " + currentUrl.toString()));
-        } else{
-          model.addAttribute("monitor", new Monitor(interval, currentUrl.toString(), statuses, "Monitor hasn't Started yet"));
-        }
-        return "monitor";
-    }
-
-    public void ControlSubThread(int sleepInterval) {
-        interval = sleepInterval;
+        monitor.resetStatuses();
+        monitor.setMessage("Monitor is Stopped for: " + monitor.getUrl());
+        model.addAttribute("monitor", monitor);
+        return "monitor"; //view
     }
 
     public void run() {
         running.set(true);
         while (running.get()) {
             try {
-                Thread.sleep(interval);
+                Thread.sleep(monitor.getInterval());
             } catch (InterruptedException e){
                 Thread.currentThread().interrupt();
-                System.out.println(
-                  "Thread was interrupted, Failed to complete operation");
+                System.out.println("Thread was interrupted, Failed to complete operation");
             }
             getStatus();
          }
     }
 
-    public void getStatus(){
-        try{
-            HttpURLConnection con = (HttpURLConnection) currentUrl.openConnection();
+    public void getStatus() {
+        try {
+            URL url = monitor.getHttpUrl();
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setRequestProperty("Content-Type", "application/json");
-            int responseCode = con.getResponseCode();
             String response = "Down";
+            int responseCode = con.getResponseCode();
             if(responseCode == 200){
                 response = "Up";
             }
             int timeout = 5000;
+            int interval = monitor.getInterval();
             if(interval < timeout){
                 timeout = interval;
             }
             con.setConnectTimeout(timeout);
-            Status status = new Status(new Date(), response);
-
-            if(statuses.size() > maxStatuses){
-                statuses.remove(0);
-            }
-            statuses.add(status);
-
-            Thread.sleep(interval);
+            monitor.addStatus(response);
         } catch (Exception e) {
             e.printStackTrace();
         }
