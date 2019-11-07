@@ -1,13 +1,20 @@
 package com.monitor;
 
+import org.springframework.util.StringUtils;
+
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Date;
+import java.net.URL;
 
 public class Monitor {
 
-    private int interval;
-    private List<Status> statuses;
-    private String url;
-    private String message;
+    private int interval = 1000;
+    private List<Status> statuses = new ArrayList<>();
+    private String url = "https://google.com";
+    private String message = "";
+    private final static int maxStatuses = 19;
+    private final static int minInterval = 299;
 
     public Monitor() {
     }
@@ -19,12 +26,55 @@ public class Monitor {
         this.message = message;
     }
 
+    public static boolean isIntervalValid(int interval) {
+        return interval > minInterval;
+    }
+
+    public static boolean isUrlValid(String url) {
+        if(StringUtils.isEmpty(url)) {
+          return false;
+        }
+        try {
+          URL testUrl = new URL(url);
+        } catch (Exception e) {
+          e.printStackTrace();
+          return false;
+        }
+        return true;
+    }
+
+    public Monitor addStatus(String response) {
+      Status status = new Status(new Date(), response);
+      if(statuses.size() > maxStatuses){
+          statuses.remove(0);
+      }
+      statuses.add(status);
+      return this;
+    }
+
+    public Monitor resetStatuses() {
+        statuses = new ArrayList<>();
+        return this;
+    }
+
+    public URL getHttpUrl() {
+        URL httpUrl = null;
+        try {
+          httpUrl = new URL(url);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        return httpUrl;
+    }
+
     public int getInterval() {
         return interval;
     }
 
     public Monitor setInterval(int interval) {
-        this.interval = interval;
+        if(isIntervalValid(interval)){
+          this.interval = interval;
+        }
         return this;
     }
 
@@ -33,7 +83,9 @@ public class Monitor {
     }
 
     public Monitor setUrl(String url) {
-        this.url = url;
+        if(isUrlValid(url)){
+          this.url = url;
+        }
         return this;
     }
 
