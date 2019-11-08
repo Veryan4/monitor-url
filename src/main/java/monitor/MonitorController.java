@@ -9,12 +9,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
 import monitor.models.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Controller
 public class MonitorController implements Runnable {
 
-    private Monitor monitor = new Monitor();
+    private Monitor monitor = new Monitor(new ArrayList<>(), 1000,  "https://google.com", "");
     private Thread worker;
     private final AtomicBoolean running = new AtomicBoolean(false);
 
@@ -46,7 +47,7 @@ public class MonitorController implements Runnable {
             return "monitor"; //view in monitor.html
         }
         this.monitor.message = "Monitor is Running";
-        //@ModelAttribute seems to stop me from passing properties of this.monitor to newMonitor
+        //@ModelAttribute seems to stop me from passing properties of this.monitor to newMonitor in bulk
         newMonitor.message = "Monitor is Running";
         newMonitor.statuses = this.monitor.statuses;
         this.worker = new Thread(this);
