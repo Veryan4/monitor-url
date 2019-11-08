@@ -50,7 +50,9 @@ public class MonitorController implements Runnable {
         //@ModelAttribute seems to stop me from passing properties of this.monitor to newMonitor in bulk
         newMonitor.message = "Monitor is Running";
         newMonitor.statuses = this.monitor.statuses;
-        this.worker.start();
+        if (!this.worker.isAlive()) {
+            this.worker.start();
+        }
         return "monitor"; //view in monitor.html
     }
 
