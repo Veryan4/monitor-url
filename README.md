@@ -26,22 +26,13 @@ The resulting monitoring data doesn’t have to be persistent.
 ### 3. My Notes
 It is unclear to me what constitutes the server being up or down. I could've went with pings in order to lighten the network load, but since the goal is to monitor an API, I used the response code 200 for the URL as a proxy for the server being up.
 
-### 4. Monitor App Requirements
 
-I used SDKMAN to control versions, I recommend giving it a look: https://sdkman.io/
-
-Maven: 3.6.2
-
-Java: 1.8.0_232
-
-Spring-boot: 2.2.0
+### 4. How to Use
 
 Have the local port 9000 free for use.
 
-### 5. How to Use
+Run with docker:
+`docker run -p 9000:9000 veryan4/monitor-url`
 
-You can use:
+To run locally, make sure you have the necessary dependencies and use:
 `./mvnw spring-boot:run`
-
-Then lookup the following in your browser:
-`localhost:9000`
