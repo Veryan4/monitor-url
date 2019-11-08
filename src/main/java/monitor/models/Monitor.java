@@ -9,20 +9,32 @@ import java.net.URL;
 
 public class Monitor {
 
-    public int interval = 1000;
-    public List < Status > statuses = new ArrayList < > ();
-    public String url = "https://google.com";
-    public String message = "";
+    public List<Status> statuses;
+    public int interval;
+    public String url;
+    public String message;
     private final static int maxStatuses = 19;
-    private final static int minInterval = 299;
+    private final static int minInterval = 0;
 
-    public Monitor() {}
-
-    public Monitor(int interval, String url, List < Status > statuses, String message) {
+    public Monitor( List<Status> statuses, int interval, String url, String message) {
+        this.statuses = statuses;
         this.interval = interval;
         this.url = url;
-        this.statuses = statuses;
         this.message = message;
+    }
+
+    public Monitor addStatus(String response) {
+        Status status = new Status(new Date(), response);
+        if (statuses.size() > maxStatuses) {
+            statuses.remove(0);
+        }
+        statuses.add(status);
+        return this;
+    }
+
+    public Monitor resetStatuses() {
+        statuses = new ArrayList<>();
+        return this;
     }
 
     public static boolean isIntervalValid(int interval) {
@@ -40,20 +52,6 @@ public class Monitor {
             return false;
         }
         return true;
-    }
-
-    public Monitor addStatus(String response) {
-        Status status = new Status(new Date(), response);
-        if (statuses.size() > maxStatuses) {
-            statuses.remove(0);
-        }
-        statuses.add(status);
-        return this;
-    }
-
-    public Monitor resetStatuses() {
-        statuses = new ArrayList < > ();
-        return this;
     }
 
     public URL getHttpUrl() {
@@ -88,11 +86,11 @@ public class Monitor {
         return this;
     }
 
-    public List < Status > getStatuses() {
+    public List<Status> getStatuses() {
         return statuses;
     }
 
-    public Monitor setStatuses(List < Status > statuses) {
+    public Monitor setStatuses(List<Status> statuses) {
         this.statuses = statuses;
         return this;
     }
