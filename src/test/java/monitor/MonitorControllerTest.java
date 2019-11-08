@@ -49,7 +49,7 @@ class MonitorControllerTest {
 
 		@Test
     public void submit() throws Exception {
-        ResultActions resultActions = mockMvc.perform( MockMvcRequestBuilders.post("/")
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post("/")
                 .content(asJsonString(new Monitor(new ArrayList<>(), 1000, "https://google.com", "Monitor is Started")))
       					.contentType(MediaType.APPLICATION_JSON)
       					.accept(MediaType.APPLICATION_JSON))
