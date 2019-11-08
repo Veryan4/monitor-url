@@ -20,11 +20,11 @@ import java.util.concurrent.Executors;
 @Controller
 public class MonitorController implements Runnable {
 
-    private Monitor monitor = new Monitor(new ArrayList < > (), 1000, "https://google.com", "");
+    private Monitor monitor = new Monitor(new ArrayList<>(), 1000, "https://google.com", "");
     private Thread worker = new Thread(this);
     private final AtomicBoolean running = new AtomicBoolean(false);
     private SseEmitter emitter = new SseEmitter();
-    private int count;
+    private int streamId;
 
     @GetMapping("/")
     public String main(Model model) {
@@ -118,15 +118,15 @@ public class MonitorController implements Runnable {
 
     public void getStream() {
         ExecutorService sseMvcExecutor = Executors.newSingleThreadExecutor();
-        sseMvcExecutor.execute(() - > {
+        sseMvcExecutor.execute(() -> {
             try {
                 List < Status > statuses = this.monitor.getStatuses();
                 SseEventBuilder event = SseEmitter.event()
                     .data(statuses.get(statuses.size() - 1))
-                    .id(String.valueOf(this.count))
+                    .id(String.valueOf(this.streamId))
                     .name("message");
                 this.emitter.send(event);
-                this.count++;
+                this.streamId++;
             } catch (Exception ex) {
                 this.emitter.completeWithError(ex);
             }
