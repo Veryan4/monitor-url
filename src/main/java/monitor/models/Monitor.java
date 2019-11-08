@@ -12,7 +12,7 @@ public class Monitor {
     public int interval;
     public String url;
     public String message;
-    private final static int maxStatuses = 19;
+    private final static int maxStatuses = 9;
     private final static int minInterval = 0;
 
     public Monitor( List<Status> statuses, int interval, String url, String message) {
