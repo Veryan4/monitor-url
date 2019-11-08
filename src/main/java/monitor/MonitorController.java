@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class MonitorController implements Runnable {
 
     private Monitor monitor = new Monitor(new ArrayList<>(), 1000,  "https://google.com", "");
-    private Thread worker;
+    private Thread worker = new Thread(this);
     private final AtomicBoolean running = new AtomicBoolean(false);
 
     @GetMapping("/")
@@ -50,7 +50,6 @@ public class MonitorController implements Runnable {
         //@ModelAttribute seems to stop me from passing properties of this.monitor to newMonitor in bulk
         newMonitor.message = "Monitor is Running";
         newMonitor.statuses = this.monitor.statuses;
-        this.worker = new Thread(this);
         this.worker.start();
         return "monitor"; //view in monitor.html
     }
@@ -65,16 +64,13 @@ public class MonitorController implements Runnable {
     }
 
     public void run() {
-        this.running.set(true);
-        while (this.running.get()) {
-            try {
-                Thread.sleep(this.monitor.interval);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.out.println("Thread was interrupted, Failed to complete operation");
-            }
-            getStatus();
+        this.running.set(false);
+        if (this.worker.isAlive()) {
+            this.worker.interrupt();
+            this.monitor.message = "Monitor is Stopped";
         }
+        model.addAttribute("monitor", this.monitor);
+        return "monitor"; //view in monitor.html
     }
 
     public void getStatus() {
