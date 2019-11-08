@@ -28,10 +28,12 @@ It is unclear to me what constitutes the server being up or down. I could've wen
 
 ### 4. How to Use
 
-Have the local port 9000 free for use.
+Here is an example of the app: https://monitor-url.herokuapp.com/
+
+To run locally, have the local port 9000 free for use.
 
 Run with docker:
 `docker run -p 9000:9000 veryan4/monitor-url`
 
-To run locally, make sure you have the necessary dependencies and use:
+Otherwise, make sure you have the necessary dependencies and use:
 `./mvnw spring-boot:run`
