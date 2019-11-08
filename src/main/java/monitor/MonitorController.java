@@ -18,26 +18,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Controller
-package monitor;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter.SseEventBuilder;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.ui.Model;
-import monitor.models.*;
-import java.net.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-@Controller
 public class MonitorController implements Runnable {
 
     private Monitor monitor = new Monitor(new ArrayList < > (), 1000, "https://google.com", "");
