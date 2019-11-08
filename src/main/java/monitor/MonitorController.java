@@ -57,20 +57,25 @@ public class MonitorController implements Runnable {
     @GetMapping("/stop")
     public String stop(Model model) {
         this.running.set(false);
-        this.worker.stop();
-        this.monitor.message ="Monitor is Stopped";
-        model.addAttribute("monitor", this.monitor);
-        return "monitor"; //view in monitor.html
-    }
-
-    public void run() {
-        this.running.set(false);
         if (this.worker.isAlive()) {
             this.worker.interrupt();
             this.monitor.message = "Monitor is Stopped";
         }
         model.addAttribute("monitor", this.monitor);
         return "monitor"; //view in monitor.html
+    }
+
+    public void run() {
+        this.running.set(true);
+        while (this.running.get()) {
+            try {
+                Thread.sleep(this.monitor.interval);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Thread was interrupted, Failed to complete operation");
+            }
+            getStatus();
+        }
     }
 
     public void getStatus() {
