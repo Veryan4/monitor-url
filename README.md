@@ -4,8 +4,7 @@
 1. The Problem
 2. Quiz Requirements
 3. My Notes
-4. Monitor App Requirements
-5. How to Use
+4. How to Use
 
 ### 1. The Problem
 We’re asking you to build a specific monitoring application.
