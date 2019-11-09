@@ -1,21 +1,22 @@
 package monitor;
 
 import org.springframework.util.StringUtils;
+import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Date;
 import java.net.URL;
 
-public class Monitor {
+public class Monitor implements Serializable {
 
     public List<Status> statuses;
     public int interval;
     public String url;
     public String message;
-    private final static int maxStatuses = 9;
+    private final static int maxStatuses = 20;
     private final static int minInterval = 0;
 
-    public Monitor( List<Status> statuses, int interval, String url, String message) {
+    public Monitor(List<Status> statuses, int interval, String url, String message) {
         this.statuses = statuses;
         this.interval = interval;
         this.url = url;
@@ -24,7 +25,7 @@ public class Monitor {
 
     public Monitor addStatus(String response) {
         Status status = new Status(new Date(), response);
-        if (statuses.size() > maxStatuses) {
+        if (statuses.size() >= maxStatuses) {
             statuses.remove(0);
         }
         statuses.add(status);
