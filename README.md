@@ -38,7 +38,7 @@ It is unclear to me what constitutes the server being up or down. I could have g
 
 ### 5. How to Use
 
-Here is an example of the app: https://monitor-url.herokuapp.com/
+The streaming of data isn't working well on Heroku so I suggest running it locally for the full experience. That being said here is an example of the app: https://monitor-url.herokuapp.com/  
 
 To run locally, have the local port 9000 free for use.
 
