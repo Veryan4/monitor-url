@@ -1,113 +1,251 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-
-<head>
-    <title>GOLO Test</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-</head>
-
-<body>
-    <container>
-        <h1>Monitor the Status or a URL</h1>
-        <form action="#" th:action="@{/}" th:object="${monitor}" method="post">
-            <div class="row">
-                <div class="col">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Server Satus</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody">
-                            <tr th:each="stat : *{statuses}">
-                                <td th:text="${stat.time}"></td>
-                                <td th:text="${stat.status}"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="col">
-                    <p>Interval (in Milliseconds):
-                        <input type="text" th:field="*{interval}" />
-                    </p>
-                    <p>URL:
-                        <input type="text" th:field="*{url}" />
-                    </p>
-                    <p th:text="*{message}"></p>
-                    <p>
-                        <input type="submit" value="Start/Update" />
-                        <button><a href="/stop">Stop</a></button>
-                    </p>
-                </div>
+   <head>
+      <title>GOLO Test</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+   </head>
+   <body>
+      <container>
+         <h1>Monitor the Status of a URL</h1>
+         <form action="#" th:action="@{/}" th:object="${monitor}" method="post">
+            <div class="row-flex">
+               <div class="col-flex">
+                  <table id="ud-graph">
+                     <thead>
+                        <tr class="up head">
+                           <th class="up head">Up</th>
+                           <th class="down head">Down</th>
+                        </tr>
+                     </thead>
+                     <tbody id="tbody">
+                        <tr class="ud" th:each="stat : *{statuses}">
+                           <th scope="row" th:text="${stat.time}"></th>
+                           <td class="bar" th:classappend="${stat.status}" ></td>
+                        </tr>
+                     </tbody>
+                  </table>
+                  <div id="ticks">
+                     <div class="tick" style="height: 0px;">
+                        <p>Up</p>
+                     </div>
+                     <div class="tick" style="height: 200px;">
+                        <p></p>
+                     </div>
+                     <div class="tick" style="height: 20px;">
+                        <p>Down</p>
+                     </div>
+                  </div>
+               </div>
             </div>
-        </form>
-    </container>
-</body>
-
+            <div class="row-flex real-form">
+               <div class="col-flex">
+                  <p>Interval (in Milliseconds):
+                     <input type="text" th:field="*{interval}" />
+                  </p>
+                  <p>URL:
+                     <input type="text" th:field="*{url}" />
+                  </p>
+                  <p th:text="*{message}"></p>
+                  <p>
+                     <input type="submit" value="Start/Update" />
+                     <button><a href="/stop">Stop</a></button>
+                  </p>
+               </div>
+            </div>
+         </form>
+      </container>
+   </body>
 </html>
 <script type="application/javascript">
-    var eventSource = new EventSource("http://localhost:9000/stream");
+   var eventSource = new EventSource("http://localhost:9000/stream");
 
-    function add(message) {
-        var tbody = document.getElementById('tbody');
-        var tr = document.createElement("tr");
-        var td = document.createElement("td");
-        var newRow = tbody.insertRow();
-        var time = newRow.insertCell(0);
-        var status = newRow.insertCell(1);
-        if (tbody.rows.length > 10) {
-            tbody.deleteRow(0);
-        }
-        time.appendChild(document.createTextNode(message.time));
-        status.appendChild(document.createTextNode(message.status));
-    }
+   function add(message) {
+       var tbody = document.getElementById('tbody');
+       var newRow = tbody.insertRow();
+       var time = document.createElement('th');
+       var status = document.createElement('td');
+       if (tbody.rows.length > 20) {
+           tbody.deleteRow(0);
+       }
+       newRow.classList.add("ud");
+       time.innerHTML = message.time;
+       time.scope = "row";
+       newRow.appendChild(time);
+       status.classList.add("bar")
+       status.classList.add(message.status);
+       newRow.appendChild(status);
+   }
 
-    eventSource.onmessage = function(e) {
-        var message = JSON.parse(e.data);
-        add(message);
-    }
+   eventSource.onmessage = function(e) {
+       var message = JSON.parse(e.data);
+       add(message);
+   }
 
-    eventSource.onerror = function(e) {
-        if (e.readyState === EventSource.CONNECTING) {
-            console.log('event: CONNECTING');
-        } else if (e.readyState === EventSource.OPEN) {
-            console.log('event: OPEN');
-        } else if (e.readyState === EventSource.CLOSING) {
-            console.log('event: CLOSING');
-        } else if (e.readyState === EventSource.CLOSED) {
-            console.log('event: CLOSED');
-        }
-    }
-    if (!window.EventSource) {
-        alert('The browser does not support Server-Sent Events');
-    }
+   eventSource.onerror = function(e) {
+       if (e.readyState === EventSource.CONNECTING) {
+           console.log('event: CONNECTING');
+       } else if (e.readyState === EventSource.OPEN) {
+           console.log('event: OPEN');
+       } else if (e.readyState === EventSource.CLOSING) {
+           console.log('event: CLOSING');
+       } else if (e.readyState === EventSource.CLOSED) {
+           console.log('event: CLOSED');
+       }
+   }
+   if (!window.EventSource) {
+       alert('The browser does not support Server-Sent Events');
+   }
 </script>
 <style>
-    container {
-        display: block;
-        padding: 30px 20%;
-    }
-    
-    a {
-        text-decoration: none;
-        color: black;
-    }
-    
-    table {
-        border-collapse: collapse;
-    }
-    
-    table,
-    th,
-    td {
-        border: 1px solid black;
-        padding: 5px;
-    }
-    .row {
-        display:flex;
-    }
-    .col {
-        width:50%;
-    }
+   container {
+   display: block;
+   padding: 30px 20%;
+   }
+   a {
+   text-decoration: none;
+   color: black;
+   }
+   h1 {
+   margin-top: 0px;
+   }
+   .row-flex {
+   display:flex;
+   width:100%;
+   }
+   .col-flex {
+   width:100%;
+   }
+   .real-form{
+   padding-top: 50px;
+   }
+   #ud-graph {
+   display: block; /* fixes layout wonkiness in FF1.5 */
+   position: relative;
+   width: 800px;
+   height: 300px;
+   margin: 1.1em 0 0;
+   padding: 0;
+   background: transparent;
+   font-size: 11px;
+   }
+   #ud-graph th, #ud-graph tr, #ud-graph td {
+   position: absolute;
+   bottom: 0;
+   width: 40px;
+   z-index: 2;
+   margin: 0;
+   padding: 0;
+   text-align: center;
+   }
+   #ud-graph thead th.up {
+   top: 0;
+   left: 0;
+   line-height: 2;
+   }
+   #ud-graph thead th.down {
+   top: 3em;
+   line-height: 2;
+   left: 0;
+   }
+   #ud-graph tbody tr {
+   height: 275px;
+   padding-top: 2px;
+   border-left: 1px dotted #C4C4C4;
+   color: #AAA;
+   }
+   #ud-graph #c1 {
+   left: 0;
+   }
+   .ud:nth-child(1){left: 40px;}
+   .ud:nth-child(2){left: 80px;}
+   .ud:nth-child(3){left: 120px;}
+   .ud:nth-child(4){left: 160px;}
+   .ud:nth-child(5){left: 200px;}
+   .ud:nth-child(6){left: 240px;}
+   .ud:nth-child(7){left: 280px;}
+   .ud:nth-child(8){left: 320px;}
+   .ud:nth-child(9){left: 360px;}
+   .ud:nth-child(10){left: 400px;}
+   .ud:nth-child(11){left: 440px;}
+   .ud:nth-child(12){left: 480px;}
+   .ud:nth-child(13){left: 520px;}
+   .ud:nth-child(14){left: 560px;}
+   .ud:nth-child(15){left: 600px;}
+   .ud:nth-child(16){left: 640px;}
+   .ud:nth-child(17){left: 680px;}
+   .ud:nth-child(18){left: 720px;}
+   .ud:nth-child(19){left: 760px;}
+   .ud:nth-child(20){left: 800px;border-right: none;}
+   #ud-graph tbody th {bottom: -1.75em; vertical-align: top;
+   font-weight: normal; color: #333;}
+   #ud-graph .bar {
+   width: 24px;
+   border: 1px solid;
+   border-bottom: none;
+   color: #000;
+   left:6px;
+   }
+   th{
+   font-size: 8px;
+   }
+   th.head{
+   font-size: 12px;
+   }
+   .bar.up{
+   height: 259px;
+   }
+   .bar.down{
+   height: 22px;
+   }
+   #ud-graph .up {
+   background-color: #0074d9;
+   border-color: transparent;
+   }
+   #ud-graph .down {
+   background-color: #ff4136;
+   border-color: transparent;
+   }
+   #ticks {
+   position: relative;
+   top: -225px;
+   left: 2px;
+   width: 796px;
+   height: 300px;
+   z-index: 1;
+   margin-bottom: -300px;
+   font-size: 10px;
+   font-family: "fira-sans-2", Verdana, sans-serif;
+   }
+   #ticks .tick {
+   position: relative;
+   border-bottom: 1px dotted #C4C4C4;
+   width: 900px;
+   }
+   #ticks .tick p {
+   position: absolute;
+   left: -5em;
+   top: -0.8em;
+   margin: 0 0 0 0.5em;
+   }
+   #ud-graph thead tr {
+   left: 100%;
+   top: 55%;
+   bottom: auto;
+   margin: -2.5em 0 0 5em;}
+   #ud-graph thead th {
+   width: 7.5em;
+   height: auto;
+   padding: 0.5em 1em;
+   }
+   body, html {
+   height: 100%;
+   }
+   body {
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+   font-family: "fira-sans-2", Verdana, sans-serif;
+   }
 </style>
+
