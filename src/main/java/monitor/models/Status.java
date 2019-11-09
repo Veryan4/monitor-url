@@ -1,15 +1,14 @@
-package monitor;
-
+import java.io.Serializable;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 
-public class Status {
+public class Status implements Serializable {
 
     private String time;
     private String status;
 
     public Status(Date time, String status) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
         this.time = dateFormat.format(time);
         this.status = status;
     }
