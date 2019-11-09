@@ -8,13 +8,13 @@
 5. How to Use
 
 ### 1. The Rules
-●	The test is done by you and only you, the applicant. You have to use the Java programing language.
+-The test is done by you and only you, the applicant. You have to use the Java programing language.
 
-●	Once you receive the test, you have 72 hours to send it back to us.
+-Once you receive the test, you have 72 hours to send it back to us.
 
-●	You’ll need to give us access to a GitHub repository where the code can be viewed, with easy instructions to launch it.
+-You’ll need to give us access to a GitHub repository where the code can be viewed, with easy instructions to launch it.
 
-●	Of course, we want you to make the code as robust as possible.
+-Of course, we want you to make the code as robust as possible.
 
 
 ### 2. The Problem
