@@ -21,7 +21,7 @@ import java.util.concurrent.Executors;
 public class MonitorController implements Runnable {
 
     private Monitor monitor = new Monitor(new ArrayList<>(), 1000, "https://google.com", "");
-    private Thread worker = new Thread(this);
+    private volatile Thread worker;
     private final AtomicBoolean running = new AtomicBoolean(false);
     private SseEmitter emitter = new SseEmitter();
     private int streamId;
@@ -33,12 +33,6 @@ public class MonitorController implements Runnable {
         }
         model.addAttribute("monitor", this.monitor);
         return "monitor"; //view in monitor.html
-    }
-
-    @GetMapping("/stream")
-    public SseEmitter handleSse() {
-        this.emitter = new SseEmitter();
-        return this.emitter;
     }
 
     @PostMapping("/")
@@ -62,7 +56,6 @@ public class MonitorController implements Runnable {
         this.monitor.message = "Monitor is Running";
         newMonitor.message = "Monitor is Running";
         newMonitor.statuses = this.monitor.statuses;
-        this.running.set(true);
         this.worker = new Thread(this);
         this.worker.start();
         return "monitor"; //view in monitor.html
@@ -70,15 +63,21 @@ public class MonitorController implements Runnable {
 
     @GetMapping("/stop")
     public String stop(Model model) {
-        this.running.set(false);
-        this.worker.interrupt();
+        this.worker = null;
         this.monitor.message = "Monitor is Stopped";
         model.addAttribute("monitor", this.monitor);
         return "monitor"; //view in monitor.html
     }
 
+    @GetMapping("/stream")
+    public SseEmitter handleSse() {
+        this.emitter = new SseEmitter();
+        return this.emitter;
+    }
+
     public void run() {
-        while (this.running.get()) {
+        Thread thisThread = Thread.currentThread();
+        while (this.worker == thisThread) {
             try {
                 Thread.sleep(this.monitor.interval);
             } catch (InterruptedException e) {
@@ -92,21 +91,22 @@ public class MonitorController implements Runnable {
 
     public void getStatus() {
         try {
+            String response = "up";
+            int responseCode = 0;
             URL url = this.monitor.getHttpUrl();
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            con.setRequestProperty("Content-Type", "application/json");
-            String response = "Down";
-            int responseCode = con.getResponseCode();
-            if (responseCode == 200) {
-                response = "Up";
+            try {
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                con.setRequestMethod("GET");
+                con.setRequestProperty("Content-Type", "application/json");
+                con.connect();
+                responseCode = con.getResponseCode();
+                con.disconnect();
+            } catch (UnknownHostException | SocketException e) {
+                response = "down";
             }
-            int timeout = 5000;
-            int interval = monitor.interval;
-            if (interval < timeout) {
-                timeout = interval;
+            if (responseCode != 200) {
+                response = "down";
             }
-            con.setConnectTimeout(timeout);
             this.monitor.addStatus(response);
         } catch (Exception e) {
             e.printStackTrace();
