@@ -34,7 +34,7 @@ The app should have another REST endpoint which, when requested, gives an overvi
 The resulting monitoring data doesn’t have to be persistent.
 
 ### 4. My Notes
-It is unclear to me what constitutes the server being up or down. I could have went with pings in order to lighten the network load, but since the goal is to monitor an API I used the response code 200 for a URL as a proxy for the server being up.
+It is unclear to me what constitutes the server being up or down. I could have gone with pings in order to lighten the network load, but since the goal is to monitor an API I used the response code 200 for a URL as a proxy for the server being up.
 
 ### 5. How to Use
 
